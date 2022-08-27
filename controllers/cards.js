@@ -10,7 +10,7 @@ module.exports.getCards = async (req, res) => {
 
     res.status(OK_REQUEST).send(cards);
   } catch (err) {
-    if (err._message === 'card validation failed') {
+    if (err._message === 'card validation failed' || err.kind === 'string') {
       res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
     }
 
@@ -27,7 +27,7 @@ module.exports.createCard = async (req, res) => {
 
     res.status(OK_REQUEST).send(card);
   } catch (err) {
-    if (err._message === 'card validation failed') {
+    if (err._message === 'card validation failed' || err.kind === 'string') {
       res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
     }
 
@@ -46,6 +46,11 @@ module.exports.deleteCard = async (req, res) => {
 
     res.status(OK_REQUEST).send(card);
   } catch (err) {
+    if (err.kind === 'ObjectId') {
+      res.status(ERROR_INCORRECT_DATA).send({ message: 'Передан некорректный id для удаления карточки' });
+      return;
+    }
+
     res.status(ERROR_SERVER).send({ message: err.message });
   }
 };
