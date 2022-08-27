@@ -10,7 +10,7 @@ module.exports.getUsers = async (req, res) => {
 
     res.status(OK_REQUEST).send(users);
   } catch (err) {
-    if (err.errors.name.name === 'ValidatorError') {
+    if (err._message === 'User validation failed') {
       res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
       return;
     }
@@ -47,7 +47,8 @@ module.exports.createUser = async (req, res) => {
 
     res.status(OK_REQUEST).send(user);
   } catch (err) {
-    if (err.errors.name.name === 'ValidatorError') {
+    console.log(err);
+    if (err._message === 'User validation failed') {
       res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
       return;
     }
@@ -70,7 +71,7 @@ module.exports.editUserData = async (req, res) => {
 
     res.status(OK_REQUEST).send(user);
   } catch (err) {
-    if (err.errors.name.name === 'ValidatorError') {
+    if (err._message === 'Validation failed') {
       res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
       return;
     }
@@ -93,7 +94,7 @@ module.exports.editUserAvatar = async (req, res) => {
 
     res.status(OK_REQUEST).send(user);
   } catch (err) {
-    if (err.errors.name.name === 'ValidatorError') {
+    if (err.valueType !== 'String') {
       res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
       return;
     }

@@ -10,7 +10,7 @@ module.exports.getCards = async (req, res) => {
 
     res.status(OK_REQUEST).send(cards);
   } catch (err) {
-    if (err.errors.name.name === 'ValidatorError') {
+    if (err._message === 'card validation failed') {
       res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
     }
 
@@ -27,7 +27,7 @@ module.exports.createCard = async (req, res) => {
 
     res.status(OK_REQUEST).send(card);
   } catch (err) {
-    if (err.errors.name.name === 'ValidatorError') {
+    if (err._message === 'card validation failed') {
       res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
     }
 
