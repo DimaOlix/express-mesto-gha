@@ -1,8 +1,6 @@
 const User = require('../models/user');
+const { ERROR_SERVER, ERROR_INCORRECT_DATA, ERROR_NOT_FOUND } = require('../utils/utils');
 
-const ERROR_SERVER = 500;
-const ERROR_INCORRECT_DATA = 400;
-const ERROR_NOT_FOUND = 404;
 
 module.exports.getUsers = async (req, res) => {
   try {
@@ -10,11 +8,6 @@ module.exports.getUsers = async (req, res) => {
 
     res.send(users);
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
-      return;
-    }
-
     res.status(ERROR_SERVER).send({ message: err.message });
   }
 };

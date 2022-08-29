@@ -1,8 +1,6 @@
 const Card = require('../models/card');
+const { ERROR_SERVER, ERROR_INCORRECT_DATA, ERROR_NOT_FOUND } = require('../utils/utils');
 
-const ERROR_SERVER = 500;
-const ERROR_INCORRECT_DATA = 400;
-const ERROR_NOT_FOUND = 404;
 
 module.exports.getCards = async (req, res) => {
   try {
@@ -10,11 +8,7 @@ module.exports.getCards = async (req, res) => {
 
     res.send(cards);
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
-    }
-
-    res.send({ message: err.message });
+    res.status(ERROR_SERVER).send({ message: err.message });
   }
 };
 
