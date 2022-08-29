@@ -1,16 +1,16 @@
 const User = require('../models/user');
 
-const {
-  OK_REQUEST = 200, ERROR_SERVER = 500, ERROR_INCORRECT_DATA = 400, ERROR_NOT_FOUND = 404,
-} = process.env;
+const ERROR_SERVER = 500;
+const ERROR_INCORRECT_DATA = 400;
+const ERROR_NOT_FOUND = 404;
 
 module.exports.getUsers = async (req, res) => {
   try {
     const users = await User.find({});
 
-    res.status(OK_REQUEST).send(users);
+    res.send(users);
   } catch (err) {
-    if (err._message === 'User validation failed') {
+    if (err.name === 'ValidationError') {
       res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
       return;
     }
@@ -28,7 +28,7 @@ module.exports.getUser = async (req, res) => {
       return;
     }
 
-    res.status(OK_REQUEST).send(user);
+    res.send(user);
   } catch (err) {
     if (err.kind === 'ObjectId') {
       res.status(ERROR_INCORRECT_DATA).send({ message: 'Некорректный id пользователя' });
@@ -45,10 +45,9 @@ module.exports.createUser = async (req, res) => {
 
     const user = await User.create({ name, about, avatar });
 
-    res.status(OK_REQUEST).send(user);
+    res.send(user);
   } catch (err) {
-    console.log(err);
-    if (err._message === 'User validation failed') {
+    if (err.name === 'ValidationError') {
       res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
       return;
     }
@@ -59,19 +58,20 @@ module.exports.createUser = async (req, res) => {
 
 module.exports.editUserData = async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(req.user._id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-
-    if (!user) {
-      res.status(ERROR_NOT_FOUND).send({ message: 'Пользователя с таким id не найдено' });
-      return;
+    if (req.body.name && req.body.about) {
+      const user = await User.findByIdAndUpdate(req.user._id, req.body, {
+        new: true,
+        runValidators: true,
+      });
+      if (!user) {
+        res.status(ERROR_NOT_FOUND).send({ message: 'Пользователя с таким id не найдено' });
+        return;
+      }
+      res.send(user);
     }
-
-    res.status(OK_REQUEST).send(user);
+    res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
   } catch (err) {
-    if (err._message === 'Validation failed') {
+    if (err.name === 'ValidationError') {
       res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
       return;
     }
@@ -82,19 +82,22 @@ module.exports.editUserData = async (req, res) => {
 
 module.exports.editUserAvatar = async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(req.user._id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    if (req.body.avatar) {
+      const user = await User.findByIdAndUpdate(req.user._id, req.body, {
+        new: true,
+        runValidators: true,
+      });
 
-    if (!user) {
-      res.status(ERROR_NOT_FOUND).send({ message: 'Пользователя с таким id не найдено' });
-      return;
+      if (!user) {
+        res.status(ERROR_NOT_FOUND).send({ message: 'Пользователя с таким id не найдено' });
+        return;
+      }
+
+      res.send(user);
     }
-
-    res.status(OK_REQUEST).send(user);
+    res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
   } catch (err) {
-    if (err.valueType !== 'String') {
+    if (err.name === 'ValidationError') {
       res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
       return;
     }

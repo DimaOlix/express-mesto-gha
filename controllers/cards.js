@@ -1,16 +1,16 @@
 const Card = require('../models/card');
 
-const {
-  OK_REQUEST = 200, ERROR_SERVER = 500, ERROR_INCORRECT_DATA = 400, ERROR_NOT_FOUND = 404,
-} = process.env;
+const ERROR_SERVER = 500;
+const ERROR_INCORRECT_DATA = 400;
+const ERROR_NOT_FOUND = 404;
 
 module.exports.getCards = async (req, res) => {
   try {
     const cards = await Card.find({});
 
-    res.status(OK_REQUEST).send(cards);
+    res.send(cards);
   } catch (err) {
-    if (err._message === 'card validation failed' || err.kind === 'string') {
+    if (err.name.name === 'ValidationError') {
       res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
     }
 
@@ -25,9 +25,9 @@ module.exports.createCard = async (req, res) => {
 
     const card = await Card.create({ name, link, owner });
 
-    res.status(OK_REQUEST).send(card);
+    res.send(card);
   } catch (err) {
-    if (err._message === 'card validation failed' || err.kind === 'string') {
+    if (err.name.name === 'ValidationError') {
       res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
     }
 
@@ -44,7 +44,7 @@ module.exports.deleteCard = async (req, res) => {
       return;
     }
 
-    res.status(OK_REQUEST).send(card);
+    res.send(card);
   } catch (err) {
     if (err.kind === 'ObjectId') {
       res.status(ERROR_INCORRECT_DATA).send({ message: 'Передан некорректный id для удаления карточки' });
@@ -68,7 +68,7 @@ module.exports.setLikeCard = async (req, res) => {
       return;
     }
 
-    res.status(OK_REQUEST).send(card);
+    res.send(card);
   } catch (err) {
     if (err.kind === 'ObjectId') {
       res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные для постановки лайка' });
@@ -92,7 +92,7 @@ module.exports.dislikeCard = async (req, res) => {
       return;
     }
 
-    res.status(OK_REQUEST).send(card);
+    res.send(card);
   } catch (err) {
     if (err.kind === 'ObjectId') {
       res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные для удаления лайка' });
