@@ -1,6 +1,11 @@
 const { celebrate, Joi } = require('celebrate');
 const { ObjectId } = require('mongoose').Types;
 
+
+module.exports.validateCookie = celebrate({
+  cookies: Joi.string().required(),
+});
+
 module.exports.validateEditAvatar = celebrate({
   body: Joi.object().keys({
     avatar: Joi.string(),
