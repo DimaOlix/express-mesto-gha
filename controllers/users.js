@@ -59,7 +59,7 @@ module.exports.createUser = async (req, res, next) => {
     res.send(user);
   } catch (err) {
     if (err.name === 'ValidationError') {
-      next(new ErrorIncorrectData(err.errors.email.message));
+      next(new ErrorIncorrectData('Переданы некорректные данные'));
       return;
     }
 

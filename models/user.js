@@ -7,9 +7,7 @@ const userSchema = mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    validate: [validator.isEmail, {
-      message: props => `${props.value} некорректное значение для email!`,
-    }],
+    validate: validator.isEmail,
   },
   password: {
     type: String,
@@ -34,7 +32,6 @@ const userSchema = mongoose.Schema({
     validate: {
       // eslint-disable-next-line no-useless-escape
       validator: val => /https?:\/\/[w{3}]?[0-9a-z\-\.\_\~\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=]+\#?$/.test(val),
-      message: 'Передан некорректный адрес аватара',
     },
   },
 }, { versionKey: false });
