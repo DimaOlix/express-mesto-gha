@@ -10,6 +10,11 @@ const cardSchema = mongoose.Schema({
   link: {
     type: String,
     required: true,
+    validate: {
+      // eslint-disable-next-line no-useless-escape
+      validator: val => /https?:\/\/[w{3}]?[0-9a-z\-\.\_\~\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=]+\#?$/.test(val),
+      message: 'Передан некорректный адрес',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

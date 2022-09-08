@@ -1,18 +1,21 @@
 const Card = require('../models/card');
-const { ERROR_SERVER, ERROR_INCORRECT_DATA, ERROR_NOT_FOUND } = require('../utils/utils');
+const ErrorNotFound = require('../error-classes/ErrorNotFound');
+const ErrorIncorrectData = require('../error-classes/ErrorIncorrectData');
+const ErrorServer = require('../error-classes/ErrorServer');
+const ErrorForbidden = require('../error-classes/ErrorForbidden');
 
 
-module.exports.getCards = async (req, res) => {
+module.exports.getCards = async (req, res, next) => {
   try {
     const cards = await Card.find({});
 
     res.send(cards);
   } catch (err) {
-    res.status(ERROR_SERVER).send({ message: err.message });
+    next(new ErrorServer('Произошла ошибка на сервере'));
   }
 };
 
-module.exports.createCard = async (req, res) => {
+module.exports.createCard = async (req, res, next) => {
   try {
     const { name, link } = req.body;
     const owner = req.user._id;
@@ -22,34 +25,39 @@ module.exports.createCard = async (req, res) => {
     res.send(card);
   } catch (err) {
     if (err.name === 'ValidationError') {
-      res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные' });
+      next(new ErrorIncorrectData(err.errors.link));
+      return;
     }
 
-    res.status(ERROR_SERVER).send({ message: err.message });
+    next(new ErrorServer('Произошла ошибка на сервере'));
   }
 };
 
-module.exports.deleteCard = async (req, res) => {
+module.exports.deleteCard = async (req, res, next) => {
   try {
-    const card = await Card.findByIdAndRemove(req.params.cardId);
+    const card = await Card.findById(req.params.cardId);
 
     if (!card) {
-      res.status(ERROR_NOT_FOUND).send({ message: 'Карточка с данным id не найдена' });
+      next(new ErrorNotFound('Карточка с данным id не найдена'));
       return;
     }
 
+    // eslint-disable-next-line eqeqeq
+    if (card.owner != req.user._id) {
+      next(new ErrorForbidden('Нельзя удалять чужие карточки'));
+      return;
+    }
+
+    await Card.deleteOne(card);
     res.send(card);
-  } catch (err) {
-    if (err.kind === 'ObjectId') {
-      res.status(ERROR_INCORRECT_DATA).send({ message: 'Передан некорректный id для удаления карточки' });
-      return;
-    }
 
-    res.status(ERROR_SERVER).send({ message: err.message });
+    next();
+  } catch (err) {
+    next(new ErrorServer('Произошла ошибка на сервере'));
   }
 };
 
-module.exports.setLikeCard = async (req, res) => {
+module.exports.setLikeCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -58,22 +66,17 @@ module.exports.setLikeCard = async (req, res) => {
     );
 
     if (!card) {
-      res.status(ERROR_NOT_FOUND).send({ message: 'Карточка с данным id не найдена' });
+      next(new ErrorNotFound('Карточка с данным id не найдена'));
       return;
     }
 
     res.send(card);
   } catch (err) {
-    if (err.kind === 'ObjectId') {
-      res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные для постановки лайка' });
-      return;
-    }
-
-    res.status(ERROR_SERVER).send({ message: err.message });
+    next(new ErrorServer('Произошла ошибка на сервере'));
   }
 };
 
-module.exports.dislikeCard = async (req, res) => {
+module.exports.dislikeCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -82,17 +85,12 @@ module.exports.dislikeCard = async (req, res) => {
     );
 
     if (!card) {
-      res.status(ERROR_NOT_FOUND).send({ message: 'Карточка с данным id не найдена' });
+      next(new ErrorNotFound('Карточка с данным id не найдена'));
       return;
     }
 
     res.send(card);
   } catch (err) {
-    if (err.kind === 'ObjectId') {
-      res.status(ERROR_INCORRECT_DATA).send({ message: 'Переданы некорректные данные для удаления лайка' });
-      return;
-    }
-
-    res.status(ERROR_SERVER).send({ message: err.message });
+    next(new ErrorServer('Произошла ошибка на сервере'));
   }
 };
