@@ -18,6 +18,26 @@ module.exports.getUsers = async (req, res, next) => {
   }
 };
 
+module.exports.getUserById = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.userId);
+
+    if (!user) {
+      next(new ErrorNotFound('Пользователя с таким id не найдено'));
+      return;
+    }
+
+    res.send(user);
+  } catch (err) {
+    if (err.kind === 'ObjectId') {
+      next(new ErrorIncorrectData('Некорректный id пользователя'));
+      return;
+    }
+
+    next(new ErrorServer('Произошла ошибка на сервере'));
+  }
+};
+
 module.exports.getUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);
@@ -56,7 +76,7 @@ module.exports.createUser = async (req, res, next) => {
       avatar,
     });
 
-    res.send(user);
+    res.send(user.toJSON());
   } catch (err) {
     if (err.name === 'ValidationError') {
       next(new ErrorIncorrectData('Переданы некорректные данные'));
@@ -125,7 +145,7 @@ module.exports.login = async (req, res, next) => {
       .select('+password');
 
     if (!user) {
-      next(new ErrorNotFound('Пользоватль с таким email не найден'));
+      next(new ErrorAuthentication('Неверный email или пароль'));
       return;
     }
 
@@ -142,7 +162,7 @@ module.exports.login = async (req, res, next) => {
       maxAge: 3600000 * 24 * 7,
       httpOnly: true,
     })
-      .send(user.password)
+      .send({ password: user.password })
       .end();
   } catch (err) {
     if (err.name === 'ValidationError') {

@@ -34,7 +34,14 @@ const userSchema = mongoose.Schema({
       validator: val => /https?:\/\/[w{3}]?[0-9a-z\-\.\_\~\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=]+\#?$/.test(val),
     },
   },
-}, { versionKey: false });
+},
+{
+  toObject: { useProjection: true },
+  toJSON: { useProjection: true },
+},
+{
+  versionKey: false,
+});
 
 
 module.exports = mongoose.model('User', userSchema);
